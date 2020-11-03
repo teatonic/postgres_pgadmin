@@ -1,0 +1,42 @@
+version: '3.5'
+
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    labels:
+      - 'ofelia.enabled="true"'
+    environment:
+      - POSTGRES_USER=${PGDB_USER} #Non pris en compte => POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${PGDB_PASSWORD} #Non pris en compte => POSTGRES_PASSWORD=changeme
+      - PGDATA=/data/postgres
+      - POSTGRES_DB=${PGDB_NAME}
+    volumes:
+       - /data/postgres:/data/postgres
+       - /data/postgres_bckp/:/data/postgres_bckp/
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_ENABLE_TLS=${PGADMIN_TLS}
+    volumes:
+      - /data/pgadmin/.pgadmin:/root/.pgadmin
+      - /data/pgadmin_users:/var/lib/pgadmin
+      - /etc/ssl/certs/xxx.crt:/certs/server.cert
+      - /etc/ssl/certs/yyy.key:/certs/server.key
+    ports:
+      - "${PGADMIN_PORT}:443"
+    networks:
+      - postgres
+    restart: unless-stopped
+networks:
+  postgres:
+    driver: bridge
+
